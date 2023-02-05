@@ -19,40 +19,43 @@ const invoicing = async(req,res)=>{
     if(!customer){
         return res.status(404).json({error:'No Such Customer'})
     }
-const products = []
-let subtotal = 0
-for (const product of req.body.products){
-    const productsInDb = await Inventory.findById(product.productId)
-    if(!productsInDb){
-        return res.status(400).send('Involid Item !');     
+    const products = []
+    let subtotal = 0
+    
+    try {
+        for (const product of req.body.products){
+            const productsInDb = await Inventory.findById(product.productId)
+            if(!productsInDb){
+                return res.status(400).send('Involid Item !');     
+            }
+            if(productsInDb.product_Instock < product.quantity){
+                return res.status(400).send('Not Enough in Stock !')
+            }
+            productsInDb.product_Instock -= product.quantity
+            console.log("product Id - ",product.productId)
+            console.log("product quantity - ",product.quantity)
+            await productsInDb.save();
+            subtotal += product.quantity * productsInDb.product_Price;
+            products.push({
+                product:productsInDb,
+                quantity:product.quantity,
+                price:productsInDb.product_Price
+            });
+        }
+        const total = subtotal
+        const invoice = new Invoice({
+            date: new Date,
+            invoiceNumber:req.body.invoiceNumber,
+            customer,
+            products,
+            subtotal,
+            total
+        });
+        await invoice.save()
+        res.send(invoice)
+    } catch (error) {
+        res.status(500).send({ error: error.message })
     }
-    if(productsInDb.product_Instock < product.quantity){
-        return res.status(400).send('Not Enough in Stock !')
-    }
-    productsInDb.product_Instock -= product.quantity
-    console.log("product Id - ",product.productId)
-    console.log("product quantity - ",product.quantity)
-     await productsInDb.save();
-    subtotal += product.quantity * productsInDb.product_Price;
-    products.push({
-        product:productsInDb,
-        quantity:product.quantity,
-        price:productsInDb.product_Price
-    });
-    const total = subtotal
-
-    const invoice = new Invoice({
-        date: new Date,
-        invoiceNumber:req.body.invoiceNumber,
-        customer,
-        products,
-        subtotal,
-        total
-    });
-    await invoice.save()
-
-    res.send(invoice)
-}
 }
 
 

@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const invoiceSchema = new mongoose.Schema({
   invoiceNumber: {
     type: String,
-    required: true
+    required: true,
+    unique:true
   },
   date: {
     type: Date,
