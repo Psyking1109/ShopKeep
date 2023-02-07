@@ -22,7 +22,22 @@ const inventorySchema = new Schema({
     },
     product_Instock:{
         type:Number
-    }
+    },
+    products_movement:[{
+        date:{
+            type:Date
+        },
+        bill_number:{
+            type:String
+        },
+        sold:{
+            type:Number
+        },
+        recived:{
+            type:Number
+        }
+        
+    }]
 })
 
 module.exports = mongoose.model('Inventory',inventorySchema)

@@ -10,7 +10,6 @@ const invoiceSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-
   customer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Customer',

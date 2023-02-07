@@ -32,6 +32,14 @@ const invoicing = async(req,res)=>{
                 return res.status(400).send('Not Enough in Stock !')
             }
             productsInDb.product_Instock -= product.quantity
+     
+           //Entering Stock to inventory
+           const date = new Date()
+           productsInDb.products_movement.push({
+                date:date,
+                bill_number:req.body.invoiceNumber,
+                sold:product.quantity
+           })
             console.log("product Id - ",product.productId)
             console.log("product quantity - ",product.quantity)
             await productsInDb.save();

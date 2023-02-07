@@ -97,6 +97,8 @@ const addProducts = async(req,res)=>{
         return res.status(404).json({error:"No such Product"})
     }
     const products = await Inventory.findById(id)
+    products.bill_number = req.body.bill_number
+    products.products_movement = req.body.quantity
     products.product_Instock += req.body.quantity
     products.save();
     res.status(202).json(products)
