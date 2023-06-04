@@ -1,8 +1,6 @@
 const Invoice = require('../models/invoicingModel')
 const Inventory = require('../models/inventoryModel')
 const Customer = require('../models/customerModel')
-const Bank = require('../models/bankModel')
-const Cheque = require('../models/chequeModel')
 const Payment = require('../models/paymentModel')
 const mongoose = require('mongoose')
 
@@ -28,6 +26,21 @@ const invoicing = async (req, res) => {
     let productQuantity = 0
 
 
+
+    const invoice = new Invoice({
+        date: new Date,
+        invoiceNumber: req.body.invoiceNumber,
+        customer,
+
+    });
+    await invoice.save()
+    res.send(invoice)
+
+    //Get the current Invoice _id
+    const invoice_id = await Invoice.findOne({invoiceNumber:req.body.invoiceNumber},{ _id: 1 })
+
+    const invoice_details = await Invoice.findById(invoice_id)
+
     try {
         for (const product of req.body.products) {
             const productsInDb = await Inventory.findById(product.productId)
@@ -50,7 +63,7 @@ const invoicing = async (req, res) => {
             const date = new Date()
             productsInDb.products_movement.push({
                 date: date,
-                bill_number: req.body.invoiceNumber,
+                bill_number: invoice_id,
                 sold: productQuantity
             })
             console.log("product Id - ", product.productId)
@@ -65,211 +78,95 @@ const invoicing = async (req, res) => {
         }
         const total = subtotal
 
-        const payment = []
+
+        const payments = []
         let paymentType = req.body.paymentType
         const paidAmount = req.body.paidAmount
-        const balance = paidAmount - total
+        let balance = paidAmount - total
         let hasBalance = false
-        let hasDebit = false
- 
-
 
 
         if (paidAmount == balance) {
-
-            paymentType = 'Full_credit';
             hasBalance = true
-            customer.customerPayment.push({
-                invoiceNumber: req.body.invoiceNumber,
-                billDate: new Date,
-                balanceAmount: balance,
-                paymentType: 'Full_credit'
-            })
-            try {
-                const paymentMade = new Payment.create({
-                    customerName: customer,
-                    ivoiceNumber: req.body.invoiceNumber,
-                    hasBalance: true,
-                    paymentDetails: [{
-                        paymentType: paymentType,
+                 payments.push({
+                    paymentType :'Full_credit',
                         cashDetails: [{
                             date: new Date,
-                            amount:paidAmount
+                            amount: paidAmount
                         }]
-                    }],
-                    paidAmount: paidAmount,
-                    balance: balance
                 })
-                await paymentMade.save();
-                res.status(200).json(paymentMade)
-            } catch (error) {
-                res.status(400).json({ error: error.message })
-            }
-
-        } else
-            if (paidAmount < total || balance != 0) {
+        } 
+            //check if there is Credit or debit
+            if (paidAmount < total || paidAmount > total || balance != 0 ) {
                 hasBalance = true
-                customer.customerPayment.push({
-                    invoiceNumber: req.body.invoiceNumber,
-                    billDate: new Date,
-                    balanceAmount: balance,
-                    paymentType: paymentType
-                })
-
-                if (paymentType == 'cheque') {
-                    try {
-                        const paymentMade = new Payment.create({
-                            customerName: customer,
-                            ivoiceNumber: req.body.invoiceNumber,
-                            hasBalance: hasBalance,
-                            paymentDetails: [{
-                                paymentType: paymentType,
-                                chequeDetails: [{
-                                    BankName: req.body.bankName,
-                                    bankBranch: req.body.bankBranch,
-                                    datedTo: req.body.datedTo
-                                }]
-                            }],
-                            paidAmount: paidAmount,
-                            balance: balance
-                        })
-                        await paymentMade.save();
-                        res.status(200).json(paymentMade)
-                    } catch (error) {
-                        res.status(400).json({ error: error.message })
-                    }
-                } else
-
-                    if (paymentType == 'bank') {
-                        try {
-                            const paymentMade = new Payment.create({
-                                customerName: customer,
-                                ivoiceNumber: req.body.invoiceNumber,
-                                hasBalance: hasBalance,
-                                paymentDetails: [{
-                                    paymentType: paymentType,
-                                    bankDetails: [{
-                                        BankName: req.body.bankName,
-                                        bankID: req.body.bankID,
-                                        depositDate: req.body.depositDate
-                                    }]
-                                }],
-                                paidAmount: paidAmount,
-                                balance: balance
-                            })
-                            await paymentMade.save();
-                            res.status(200).json(paymentMade)
-                        } catch (error) {
-                            res.status(400).json({ error: error.message })
-                        }
-                    } else
-
-                        if (paymentType == 'cash') {
-                            try {
-                                const paymentMade = new Payment.create({
-                                    customerName: customer,
-                                    ivoiceNumber: req.body.invoiceNumber,
-                                    hasBalance: hasBalance,
-                                    paidAmount: paidAmount,
-                                    balance: balance
-                                })
-                                await paymentMade.save();
-                                res.status(200).json(paymentMade)
-                            } catch (error) {
-                                res.status(400).json({ error: error.message })
-                            }
-                        }
-
-            }else 
-            if (paidAmount > total || balance > 0) {
-                hasDebit = true
-                customer.customerPayment.push({
-                    invoiceNumber: req.body.invoiceNumber,
-                    billDate: new Date,
-                    balanceAmount: balance,
-                    paymentType: paymentType
-                })
-
-                if (paymentType == 'cheque') {
-                    try {
-                        const paymentMade = new Payment.create({
-                            customerName: customer,
-                            ivoiceNumber: req.body.invoiceNumber,
-                            hasDebit: hasDebit,
-                            paymentDetails: [{
-                                paymentType: paymentType,
-                                chequeDetails: [{
-                                    BankName: req.body.bankName,
-                                    bankBranch: req.body.bankBranch,
-                                    datedTo: req.body.datedTo
-                                }]
-                            }],
-                            paidAmount: paidAmount,
-                            balance: balance
-                        })
-                        await paymentMade.save();
-                        res.status(200).json(paymentMade)
-                    } catch (error) {
-                        res.status(400).json({ error: error.message })
-                    }
-                } else
-                    if (paymentType == 'bank') {
-                        try {
-                            const paymentMade = new Payment.create({
-                                customerName: customer,
-                                ivoiceNumber: req.body.invoiceNumber,
-                                hasDebit: hasDebit,
-                                paymentDetails: [{
-                                    paymentType: paymentType,
-                                    bankDetails: [{
-                                        BankName: req.body.bankName,
-                                        bankID: req.body.bankID,
-                                        depositDate: req.body.depositDate
-                                    }]
-                                }],
-                                paidAmount: paidAmount,
-                                balance: balance
-                            })
-                            await paymentMade.save();
-                            res.status(200).json(paymentMade)
-                        } catch (error) {
-                            res.status(400).json({ error: error.message })
-                        }
-                    } else
-                        if (paymentType == 'cash') {
-                            try {
-                                const paymentMade = new Payment.create({
-                                    customerName: customer,
-                                    ivoiceNumber: req.body.invoiceNumber,
-                                    hasDebit: hasDebit,
-                                    paidAmount: paidAmount,
-                                    balance: balance
-                                })
-                                await paymentMade.save();
-                                res.status(200).json(paymentMade)
-                            } catch (error) {
-                                res.status(400).json({ error: error.message })
-                            }
-                        }
-
             }
-        payment.push({
-            paymentType: paymentType,
-            paidAmount: paidAmount,
-            hasBalance: hasBalance
-        })
 
-        const invoice = new Invoice({
-            date: new Date,
-            invoiceNumber: req.body.invoiceNumber,
-            customer,
-            products,
-            subtotal,
-            total,
-            payment
-        });
-        await invoice.save()
-        res.send(invoice)
+                if (paymentType === 'cheque') {     
+                        payments.push({
+                            paymentType:'cheque',
+                                chequeDetails: [{       
+                                    BankName: req.body.bankName,
+                                    bankBranch: req.body.bankBranch,
+                                    datedTo: req.body.datedTo,
+                                    amount:paidAmount
+                                }]
+                        })     
+                } 
+                    if (paymentType === 'bank') {
+                       
+                           payments.push({
+                            paymentType:'bank', 
+                                    bankDetails: [{                                 
+                                        BankName: req.body.bankName,
+                                        bankID: req.body.bankID,
+                                        depositDate: req.body.depositDate,
+                                        amount:paidAmount
+                                    }]                  
+                            })                                 
+                    } 
+                        if (paymentType === 'cash') {
+                                payments.push({
+                                    paymentType:'cash',
+                                    cashDetails: [{
+                                        date: req.body.depositDate,
+                                        amount:paidAmount
+                                    }]
+                                })             
+                        }
+
+                        let totalPaid = 0;
+                        for (let i = 0; i < payments.length; i++) {
+                          const payment = payments[i];
+                          for (let method in payment) {
+                            const amount = payment[method].amount;
+                            totalPaid += amount;
+                          }
+                        }
+                        balance = totalPaid - total
+
+            const paymentDetails = new Payment({
+                customerName:customer,
+                ivoiceNumber:invoice_id,
+                hasBalance:hasBalance,
+                paymentDetails:payments,
+                paidAmount:totalPaid,
+                balance:balance
+            })
+            await paymentDetails.save()
+            res.status(200).json(paymentDetails)
+
+            const payment_id = await Invoice.findOne({invoiceNumber:invoice_id},{ _id: 1 })
+
+            invoice_details.products.push(products)
+            invoice_details.paymentDetails = payment_id
+            invoice_details.subtotal = subtotal
+            invoice_details.total = total
+
+            await invoice_details.save()
+           
+                        
+            
+       
     } catch (error) {
         res.status(500).send({ error: error.message })
     }

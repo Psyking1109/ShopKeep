@@ -37,27 +37,10 @@ billType:{
     enum:['Tax','Ml_Bill'],
     default:'Ml_Bill'
 },
-payment:[
-  {
-  paymentType:{
-    type:String,
-    enum:['cash','cheque','bank','Full_credit'],
-    default:'cash'
+paymentDetails:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:true
 },
-paidAmount:{
-    type:Number,
-    required: true
-},
-hasBalance:{
-    type:Boolean,
-    required:true
-},
-hasDebit:{
-  type:Boolean,
-  required:true
-}
-
-}],
   subtotal: {
     type: Number,
     required: true

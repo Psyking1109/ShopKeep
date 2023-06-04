@@ -9,25 +9,14 @@ const customerSchema = new Schema({
     },
     customerPayment:[{
         invoiceNumber:{
-            type:String,
+            type:mongoose.Schema.Types.ObjectId,
             required:true
         },
-        billDate:{
-            type:Date,
-            required:true
-        },
-        balanceAmount:{
-            type:Number,
-            required:true
-        },
-        DebitAmount:{
-            type:Number,
-            required:true
-        },
-        paymentType:{
-            type:String,
+        paymentDetails:{
+            type:mongoose.Schema.Types.ObjectId,
             required:true
         }
+
     }]
   
 })

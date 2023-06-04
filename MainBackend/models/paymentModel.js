@@ -10,14 +10,10 @@ const paymentSchema = new Schema({
         require: true
     },
     ivoiceNumber: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     hasBalance: {
-        type: Boolean,
-        required: true
-    },
-    hasDebit:{
         type: Boolean,
         required: true
     },
@@ -33,7 +29,7 @@ const paymentSchema = new Schema({
                 type: String
             },
             bankID: {
-                type: string
+                type: String
             },
             depositDate: {
                 type: Date
@@ -56,14 +52,14 @@ const paymentSchema = new Schema({
                 type:Number
             }
         }],
-        cashDetails:{
+        cashDetails:[{
             date:{
                 type:Date,
             },
             amount:{
                 type:Number
             }
-        }     
+        }]     
 
     }],
     paidAmount: {
@@ -74,6 +70,5 @@ const paymentSchema = new Schema({
         type:Number,
         required:true
     }
-
 
 })
