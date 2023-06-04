@@ -37,6 +37,9 @@ const paymentSchema = new Schema({
             },
             depositDate: {
                 type: Date
+            },
+            amount:{
+                type:Number
             }
         }],
         chequeDetails: [{
@@ -48,19 +51,29 @@ const paymentSchema = new Schema({
             },
             datedTo: {
                 type: Date
+            },
+            amount:{
+                type:Number
             }
         }],
-        paidAmount: {
-            type: Number,
-            required: true
-        },
-        balance:{
-            type:Number,
-            required:true
-        }
-        
+        cashDetails:{
+            date:{
+                type:Date,
+            },
+            amount:{
+                type:Number
+            }
+        }     
 
-    }]
+    }],
+    paidAmount: {
+        type: Number,
+        required: true
+    },
+    balance:{
+        type:Number,
+        required:true
+    }
 
 
 })
