@@ -82,24 +82,11 @@ const invoicing = async (req, res) => {
         const payments = []
         let paymentType = req.body.paymentType
         const paidAmount = req.body.paidAmount
-        let balance = paidAmount - total
         let hasBalance = false
 
 
-        if (paidAmount == balance) {
-            hasBalance = true
-                 payments.push({
-                    paymentType :'Full_credit',
-                        cashDetails: [{
-                            date: new Date,
-                            amount: paidAmount
-                        }]
-                })
-        } 
             //check if there is Credit or debit
-            if (paidAmount < total || paidAmount > total || balance != 0 ) {
-                hasBalance = true
-            }
+       
 
                 if (paymentType === 'cheque') {     
                         payments.push({
@@ -134,15 +121,26 @@ const invoicing = async (req, res) => {
                                 })             
                         }
 
+                        if (paidAmount == 0) {
+                            hasBalance = true
+                                 payments.push({
+                                    paymentType :'Full_credit',
+                                })
+                        } 
+
                         let totalPaid = 0;
                         for (let i = 0; i < payments.length; i++) {
                           const payment = payments[i];
-                          for (let method in payment) {
-                            const amount = payment[method].amount;
+                          for (let index in payment) {
+                            const amount = payment[index].amount;
                             totalPaid += amount;
                           }
                         }
-                        balance = totalPaid - total
+                       const balance = totalPaid - total
+
+             if (totalPaid < total || totalPaid > total || balance != 0 ) {
+                   hasBalance = true
+                 }
 
             const paymentDetails = new Payment({
                 customerName:customer,
@@ -164,9 +162,6 @@ const invoicing = async (req, res) => {
 
             await invoice_details.save()
            
-                        
-            
-       
     } catch (error) {
         res.status(500).send({ error: error.message })
     }
