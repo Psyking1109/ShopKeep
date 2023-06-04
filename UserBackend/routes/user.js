@@ -8,7 +8,7 @@ const {
 const userRouter = express.Router()
 
 //Register User
-userRouter.post('/',registerUser)
+userRouter.post('/register',registerUser)
 
 //Login
 userRouter.get('/login',login)

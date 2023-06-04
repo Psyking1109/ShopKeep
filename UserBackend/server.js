@@ -6,7 +6,7 @@ const RegisterRoute = require('./routes/user')
 app.use(express.json())
 
 
-app.use('/api/register',RegisterRoute)
+app.use('/api/user',RegisterRoute)
 
 
 
