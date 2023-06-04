@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const InvoicingRoute = require('./routes/invoicing')
 const InventoryRoute = require('./routes/inventory')
 const CustomerRoute = require('./routes/customer')
+const UserRoute = require('./routes/user')
 
 
 app.use(express.json())
@@ -18,6 +19,7 @@ app.use((req,res,next)=>{
 app.use('/api/invoicing',InvoicingRoute)
 app.use('/api/inventory',InventoryRoute)
 app.use('/api/customer',CustomerRoute)
+app.use('/api/user',UserRoute)
 
 mongoose.connect(process.env.MONGO_URI)
 .then(()=>{

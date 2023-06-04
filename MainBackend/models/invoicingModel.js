@@ -32,6 +32,32 @@ const invoiceSchema = new mongoose.Schema({
       }
     }
   ],
+billType:{
+    type:String,
+    enum:['Tax','Ml_Bill'],
+    default:'Ml_Bill'
+},
+payment:[
+  {
+  paymentType:{
+    type:String,
+    enum:['cash','cheque','bank','Full_credit'],
+    default:'cash'
+},
+paidAmount:{
+    type:Number,
+    required: true
+},
+hasBalance:{
+    type:Boolean,
+    required:true
+},
+hasDebit:{
+  type:Boolean,
+  required:true
+}
+
+}],
   subtotal: {
     type: Number,
     required: true
@@ -39,10 +65,6 @@ const invoiceSchema = new mongoose.Schema({
   total: {
     type: Number,
     required: true
-  },
-  paid: {
-    type: Boolean,
-    default: false
   }
 });
 

@@ -1,12 +1,13 @@
 const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
-const RegisterRoute = require('./routes/user')
+const userRout = require('./routes/user')
+
 
 app.use(express.json())
 
 
-app.use('/api/user',RegisterRoute)
+app.use('/api/user',userRout)
 
 
 

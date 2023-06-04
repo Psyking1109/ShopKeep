@@ -50,13 +50,17 @@ const login = async (req, res) => {
    
   };
   
-  const authenticateUser = (authorizedRoles) =>{
+  const authenticateUser = (authorizedRoles) => {
     return (req, res, next) => {
       const authHeader = req.headers['authorization'];
-      const token = authHeader && authHeader.split(' ')[1];
-      if (token == null) return res.sendStatus(401);
-  
-      jwt.verify(token, secretKey, (err, user) => {
+      if (!authHeader) {
+        return res.status(401).send({ message: 'Authorization header missing' });
+      }
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        return res.status(401).send({ message: 'Bearer token missing' });
+      }
+      jwt.verify(token, 'secretKey', (err, user) => {
         if (err) return res.sendStatus(403);
         if (authorizedRoles.includes(user.role)) {
           req.user = user;
@@ -66,7 +70,8 @@ const login = async (req, res) => {
         }
       });
     };
-  }
+  };
+  
   
 
 module.exports = {
