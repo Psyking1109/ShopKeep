@@ -39,15 +39,15 @@ billType:{
 },
 paymentDetails:{
         type:mongoose.Schema.Types.ObjectId,
-        required:true
+     // required:true
 },
   subtotal: {
     type: Number,
-    required: true
+   // required: true
   },
   total: {
     type: Number,
-    required: true
+   // required: true
   }
 });
 

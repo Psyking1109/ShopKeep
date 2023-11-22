@@ -3,6 +3,8 @@ const Inventory = require('../models/inventoryModel')
 const Customer = require('../models/customerModel')
 const Payment = require('../models/paymentModel')
 const mongoose = require('mongoose')
+const { ObjectId } = require('mongoose').Types;
+
 
 
 
@@ -33,16 +35,20 @@ const invoicing = async (req, res) => {
         customer,
 
     });
-    await invoice.save()
-    res.send(invoice)
-
+  
+    const savedInvoice = await invoice.save()
     //Get the current Invoice _id
-    const invoice_id = await Invoice.findOne({invoiceNumber:req.body.invoiceNumber},{ _id: 1 })
-
-    const invoice_details = await Invoice.findById(invoice_id)
+    
 
     try {
-        for (const product of req.body.products) {
+            if (!mongoose.Types.ObjectId.isValid(savedInvoice._id)) {
+                return res.status(404).json({ error: 'No Such bills' })
+            }else{
+                console.log("no isses here")
+            }
+            console.log(savedInvoice._id)
+            
+          for (const product of req.body.products) {
             const productsInDb = await Inventory.findById(product.productId)
             if (!productsInDb) {
                 return res.status(400).send('Invalid Item !');
@@ -58,112 +64,145 @@ const invoicing = async (req, res) => {
                 return res.status(400).send('Not Enough in Stock !')
             }
             productsInDb.product_Instock -= productQuantity
-
+            console.log("log count",)
             //Entering Stock to inventory
             const date = new Date()
-            productsInDb.products_movement.push({
-                date: date,
-                bill_number: invoice_id,
-                sold: productQuantity
-            })
-            console.log("product Id - ", product.productId)
+            await Inventory.findByIdAndUpdate(
+                productsInDb._id,
+                {
+                    $push: {
+                        products_movement: {
+                            date: date,
+                            bill_number: savedInvoice._id,
+                            sold: productQuantity
+                        }
+                    }
+                }
+            );
+            console.log("product Id - ", productsInDb.product_Name)
             console.log("product quantity - ", productQuantity)
-            await productsInDb.save();
+            
             subtotal += productQuantity * productsInDb.product_Price;
             products.push({
-                product: productsInDb,
+                product:  productsInDb._id.toString(),
                 quantity: productQuantity,
                 price: productsInDb.product_Price
             });
         }
-        const total = subtotal
+       
+         const total = subtotal
+        console.log("total ",total)
 
-
-        const payments = []
-        let paymentType = req.body.paymentType
-        const paidAmount = req.body.paidAmount
-        let hasBalance = false
+         const payments = []
+         // let paymentType = req.body.paymentType
+         
+         let hasBalance = false
 
 
             //check if there is Credit or debit
-       
+
+            for(const payment of req.body.payments){
+               // console.log("payments ",payment)
+                const paymentType = payment.paymentType
+                const paidAmount = payment.amount
+               // console.log("payment type", payment.chequeDetails)
 
                 if (paymentType === 'cheque') {     
-                        payments.push({
-                            paymentType:'cheque',
-                                chequeDetails: [{       
-                                    BankName: req.body.bankName,
-                                    bankBranch: req.body.bankBranch,
-                                    datedTo: req.body.datedTo,
-                                    amount:paidAmount
-                                }]
-                        })     
-                } 
-                    if (paymentType === 'bank') {
-                       
-                           payments.push({
-                            paymentType:'bank', 
-                                    bankDetails: [{                                 
-                                        BankName: req.body.bankName,
-                                        bankID: req.body.bankID,
-                                        depositDate: req.body.depositDate,
-                                        amount:paidAmount
-                                    }]                  
-                            })                                 
-                    } 
-                        if (paymentType === 'cash') {
-                                payments.push({
-                                    paymentType:'cash',
-                                    cashDetails: [{
-                                        date: req.body.depositDate,
-                                        amount:paidAmount
-                                    }]
-                                })             
-                        }
-
-                        if (paidAmount == 0) {
-                            hasBalance = true
-                                 payments.push({
-                                    paymentType :'Full_credit',
-                                })
-                        } 
+                    //  for(const details of req.body.details){                  
+                          payments.push({
+                              paymentType:'cheque',
+                              chequeDetails: payment.chequeDetails
+                          })  
+                     // }   
+                  } 
+                      if (paymentType === 'bank') {
+                        // for(const details of req.body.details){
+                             payments.push({
+                              paymentType:'bank', 
+                                      bankDetails: [{                                 
+                                          BankName: payment.bankDetails.bankName,
+                                          bankID: payment.bankDetails.bankID,
+                                          depositDate: payment.bankDetails.depositDate,
+                                          amount:payment.bankDetails.amount
+                                      }]                  
+                              })   
+                        //  }                              
+                      } 
+                          if (paymentType === 'cash') {
+                            //  for(const details of req.body.detail){
+                                  payments.push({
+                                      paymentType:'cash',
+                                      cashDetails: payment.cashDetails
+                                  })    
+                            //  }
+                                          
+                          }
+  
+                          if (paidAmount == 0) {
+                              hasBalance = true
+                                   payments.push({
+                                      paymentType :'Full_credit',
+                                      amount:paidAmount
+                                  })
+                          }
+                
+            }
+           // console.log("payments ",...payments)
 
                         let totalPaid = 0;
                         for (let i = 0; i < payments.length; i++) {
-                          const payment = payments[i];
-                          for (let index in payment) {
-                            const amount = payment[index].amount;
-                            totalPaid += amount;
-                          }
+                            const payment = payments[i];
+                        
+                            if (payment.paymentType === 'cheque') {
+                                for (const detail of payment.chequeDetails) {
+                                    totalPaid += detail.amount;
+                                }
+                            } else if (payment.paymentType === 'bank') {
+                                for (const detail of payment.bankDetails) {
+                                    totalPaid += detail.amount;
+                                }
+                            } else if (payment.paymentType === 'cash') {
+                                for (const detail of payment.cashDetails) {
+                                    totalPaid += detail.amount;
+                                }
+                            } 
                         }
+                        
                        const balance = totalPaid - total
-
+                        console.log("total paid",totalPaid)
              if (totalPaid < total || totalPaid > total || balance != 0 ) {
                    hasBalance = true
                  }
 
             const paymentDetails = new Payment({
                 customerName:customer,
-                ivoiceNumber:invoice_id,
+                ivoiceNumber: mongoose.Types.ObjectId(savedInvoice._id),
                 hasBalance:hasBalance,
                 paymentDetails:payments,
                 paidAmount:totalPaid,
                 balance:balance
             })
-            await paymentDetails.save()
-            res.status(200).json(paymentDetails)
+            const paymentId =  await paymentDetails.save()
+            console.log("payment details ",paymentDetails)
+           
+            //const invoice_id = await Invoice.findOne({invoiceNumber:req.body.invoiceNumber},{ _id: 1 })
 
-            const payment_id = await Invoice.findOne({invoiceNumber:invoice_id},{ _id: 1 })
+            const invoice_details = await Invoice.findById(savedInvoice._id)
 
-            invoice_details.products.push(products)
-            invoice_details.paymentDetails = payment_id
-            invoice_details.subtotal = subtotal
-            invoice_details.total = total
+            
 
-            await invoice_details.save()
+
+             console.log("payment_id ",paymentId._id)
+             invoice_details.products.push(...products);
+            invoice_details.paymentDetails = paymentId._id;
+            invoice_details.subtotal = subtotal;
+            invoice_details.total = total;
+            await invoice_details.save();
+
+            return res.status(200).json(paymentDetails)
            
     } catch (error) {
-        res.status(500).send({ error: error.message })
+        return res.status(500).json({error:error.message})
     }
 }
 

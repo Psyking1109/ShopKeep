@@ -28,7 +28,8 @@ const inventorySchema = new Schema({
             type:Date
         },
         bill_number:{
-            type:mongoose.Schema.Types.ObjectId
+            type: mongoose.Schema.Types.ObjectId,
+            ref:"Invoice"
         },
         sold:{
             type:Number

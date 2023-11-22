@@ -60,7 +60,6 @@ const paymentSchema = new Schema({
                 type:Number
             }
         }]     
-
     }],
     paidAmount: {
         type: Number,
@@ -72,3 +71,5 @@ const paymentSchema = new Schema({
     }
 
 })
+
+module.exports = mongoose.model('paymentModel',paymentSchema)
