@@ -65,7 +65,7 @@ const invoicing = async (req, res) => {
             console.log("product in stock",newQuantity)
             //Entering Stock to inventory
             const date = new Date()
-          const newEntry =   await Inventory.findByIdAndUpdate(
+      const savedInventory = await Inventory.findByIdAndUpdate(
                 productsInDb._id,
                 {
                     product_Instock:newQuantity,
@@ -76,17 +76,24 @@ const invoicing = async (req, res) => {
                             sold: productQuantity
                         }
                     }
-                }
-            );
-            console.log("New Entry- ", newEntry.product_Instock)
-          //  console.log("product quantity - ", productQuantity)
+                },
+               { new: true }
+            )
+         if(savedInventory){
+                const productMovemntId = savedInventory.products_movement[savedInventory.products_movement.length - 1]._id
+                console.log("product movement id",productMovemntId)
+                products.push({
+                    productDetail: productMovemntId,
+                    quantity: productQuantity,
+                    price: productsInDb.product_Price
+                });
+               
+            }else{
+                console,log("no documents found ")
+             } 
+
 
             subtotal += productQuantity * productsInDb.product_Price;
-            products.push({
-                product: productsInDb._id.toString(),
-                quantity: productQuantity,
-                price: productsInDb.product_Price
-            });
            
         }
 
