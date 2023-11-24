@@ -32,13 +32,9 @@ const invoiceSchema = new mongoose.Schema({
       }
     }
   ],
-billType:{
-    type:String,
-    enum:['Tax','Ml_Bill'],
-    default:'Ml_Bill'
-},
 paymentDetails:{
         type:mongoose.Schema.Types.ObjectId,
+        ref:'paymentModel'
      // required:true
 },
   subtotal: {
