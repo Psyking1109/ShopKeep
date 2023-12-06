@@ -36,14 +36,18 @@ const invoicing = async (req, res) => {
 
     const savedInvoice = await invoice.save()
     //Get the current Invoice _id
-
-
+ 
+    //saving invoice Id to customer database
+   
+   
     try {
         if (!mongoose.Types.ObjectId.isValid(savedInvoice._id)) {
             return res.status(404).json({ error: 'No Such bills' })
         } else {
             console.log("no isses here")
         }
+        customer.customerInvoice.push(savedInvoice._id)
+        await customer.save()
         console.log(savedInvoice._id)
 
         for (const product of req.body.products) {
@@ -197,6 +201,8 @@ const invoicing = async (req, res) => {
         invoice_details.subtotal = subtotal;
         invoice_details.total = total;
         await invoice_details.save();
+
+        
 
         return res.status(200).json(paymentDetails)
 

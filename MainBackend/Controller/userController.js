@@ -9,7 +9,8 @@ const registerUser = (req,res) =>{
     console.log(user)
     if(user.password !== user.confPassword){
         return res.status(400).json({error: 'Password Does not match confirm password'})
-    }else{
+    }else
+    {
     bcrypt.hash(user.password,10,async(err,hash) =>{
         user.password = hash
         try{

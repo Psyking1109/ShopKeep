@@ -15,7 +15,7 @@ const getSingleproduct = async(req,res)=>{
     }
     const products = await Inventory.findById(id)
     if(!products){
-        return res.status(404).json({error:'No Such Workout'})
+        return res.status(404).json({error:'No such Product Found'})
     }
     res.status(200).json(products)
 }

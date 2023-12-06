@@ -7,16 +7,11 @@ const customerSchema = new Schema({
     customer_Name:{
         type:String
     },
-    customerPayment:[{
+    customerInvoice:[{
         invoiceNumber:{
             type:mongoose.Schema.Types.ObjectId,
-            required:true
-        },
-        paymentDetails:{
-            type:mongoose.Schema.Types.ObjectId,
-            required:true
+            ref:'Invoice'
         }
-
     }]
   
 })
