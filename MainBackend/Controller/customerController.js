@@ -15,11 +15,27 @@ const getSingleCustomer = async(req,res)=>{
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error:'No such Customers Found'})
     }
-    const customers = await Customers.findById(id)
-    if(!customers){
+    const customer = await Customers.findById(id)
+        .populate({
+            path:'customerInvoice',
+            select:'invoiceNumber'
+        })
+        .select('customer_Name customerInvoice');
+
+    if(!customer){
         return res.status(404).json({error:'No Such Customers'})
     }
-    res.status(200).json(customers)
+    const customerName = customer.customer_Name
+    const customerInvoices = customer.customerInvoice.map(invoice => invoice.invoiceNumber)
+
+
+      console.log('Customer Name:', customerName);
+      console.log('Invoice Numbers:', customer.customerInvoice);
+
+    res.status(200).json({
+      customerName,
+      customerInvoices
+    });
 }
 
 //Create New Customer

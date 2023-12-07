@@ -35,9 +35,6 @@ const invoicing = async (req, res) => {
     });
 
     const savedInvoice = await invoice.save()
-    //Get the current Invoice _id
- 
-    //saving invoice Id to customer database
    
    
     try {

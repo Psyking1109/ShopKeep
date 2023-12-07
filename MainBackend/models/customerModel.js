@@ -7,11 +7,9 @@ const customerSchema = new Schema({
     customer_Name:{
         type:String
     },
-    customerInvoice:[{
-        invoiceNumber:{
+    customerInvoice:[{      
             type:mongoose.Schema.Types.ObjectId,
             ref:'Invoice'
-        }
     }]
   
 })
