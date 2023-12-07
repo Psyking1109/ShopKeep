@@ -28,6 +28,10 @@ const invoiceSchema = new mongoose.Schema({
       }
     }
   ],
+  hasBalance: {
+    type: Boolean,
+    //required: true
+},
 paymentDetails:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'paymentModel'
@@ -40,7 +44,11 @@ paymentDetails:{
   total: {
     type: Number,
    // required: true
-  }
+  },
+  balance:{
+    type:Number,
+    //required:true
+}
 });
 
 module.exports = mongoose.model('Invoice', invoiceSchema);

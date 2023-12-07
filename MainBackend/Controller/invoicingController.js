@@ -85,7 +85,6 @@ const invoicing = async (req, res) => {
                 console.log("product movement id",productMovemntId)
                 products.push({
                     productDetail: productMovemntId,
-                    quantity: productQuantity,
                     price: productsInDb.product_Price
                 });
                
@@ -184,7 +183,6 @@ const invoicing = async (req, res) => {
             hasBalance: hasBalance,
             paymentDetails: payments,
             paidAmount: totalPaid,
-            balance: balance
         })
         const paymentId = await paymentDetails.save()
         console.log("payment details ", paymentDetails)
@@ -197,11 +195,16 @@ const invoicing = async (req, res) => {
         invoice_details.paymentDetails = paymentId._id;
         invoice_details.subtotal = subtotal;
         invoice_details.total = total;
-        await invoice_details.save();
+        invoice_details.balance = balance;
+        invoice_details.hasBalance = hasBalance
+        const invoice = await invoice_details.save();
 
         
 
-        return res.status(200).json(paymentDetails)
+        return res.status(200).json({
+            paymentDetails,
+            invoice
+        })
 
     } catch (error) {
         return res.status(500).json({ error: error.message })

@@ -13,10 +13,6 @@ const paymentSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    hasBalance: {
-        type: Boolean,
-        required: true
-    },
     paymentDetails: [{
         paymentType: {
             type: String,
@@ -65,10 +61,7 @@ const paymentSchema = new Schema({
         type: Number,
         required: true
     },
-    balance:{
-        type:Number,
-        required:true
-    }
+
 
 })
 

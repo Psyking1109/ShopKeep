@@ -18,7 +18,7 @@ const getSingleCustomer = async(req,res)=>{
     const customer = await Customers.findById(id)
         .populate({
             path:'customerInvoice',
-            select:'invoiceNumber'
+            select:'invoiceNumber balance'
         })
         .select('customer_Name customerInvoice');
 
@@ -26,11 +26,14 @@ const getSingleCustomer = async(req,res)=>{
         return res.status(404).json({error:'No Such Customers'})
     }
     const customerName = customer.customer_Name
-    const customerInvoices = customer.customerInvoice.map(invoice => invoice.invoiceNumber)
+    const customerInvoices = customer.customerInvoice.map(invoice =>({
+        invoiceNumber:invoice.invoiceNumber,
+        balance:invoice.balance
+    }))
 
 
       console.log('Customer Name:', customerName);
-      console.log('Invoice Numbers:', customer.customerInvoice);
+      console.log('Invoice Numbers:',customerInvoices);
 
     res.status(200).json({
       customerName,
