@@ -31,13 +31,25 @@ const getSingleCustomer = async(req,res)=>{
         balance:invoice.balance
     }))
 
+    const totalBalance = customerInvoices.reduce((total, invoice) => {
+        // Check if balance field exists and is not null/undefined
+        if (invoice.balance != null) {
+            return total + invoice.balance;
+        } else {
+            // Handle case where balance field is missing or null
+            return total;
+        }
+    }, 0);
+
 
       console.log('Customer Name:', customerName);
       console.log('Invoice Numbers:',customerInvoices);
+      console.log("Balance",totalBalance)
 
     res.status(200).json({
       customerName,
-      customerInvoices
+      customerInvoices,
+      totalBalance
     });
 }
 
