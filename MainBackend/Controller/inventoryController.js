@@ -25,6 +25,7 @@ const createProducts = async(req,res)=>{
 const{product_Name,
     product_code,
     product_Price,
+    product_loosePrice,
     product_PerUnit,
     product_Instock
 }=req.body
@@ -37,6 +38,9 @@ if(!product_code){
 }
 if(!product_Price){
     emptyFields.push('product_Price')
+}
+if(!product_loosePrice){
+    emptyFields.push('product_loosePrice')
 }
 if(!product_PerUnit){
     emptyFields.push('product_PerUnit')
@@ -52,6 +56,7 @@ try{
         product_Name,
         product_code,
         product_Price,
+        product_loosePrice,
         product_PerUnit,
         product_Instock
     })
