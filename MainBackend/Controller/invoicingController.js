@@ -11,7 +11,13 @@ const getAllInvoices = async (req, res) => {
     const invoices = await Invoice.find()
     res.status(200).json(invoices)
 }
+//Get single invoice 
+const getSingleInvoice = async(req,res)=>{
+    const invoiceId = req.params.invoiceId
+    const invoice = await Invoice.findById(invoiceId)
+    res.status(200).json(invoice)
 
+}
 //Invoicing 
 const invoicing = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.body.customerId)) {
@@ -56,8 +62,10 @@ const invoicing = async (req, res) => {
             console.log("product is Loose ? = ", product.isLoose)
             if (product.isLoose === false) {
                 productQuantity = product.quantity * productsInDb.product_PerUnit
+                subtotal += productQuantity * productsInDb.product_Price;
             } else {
                 productQuantity = product.quantity
+                subtotal += productQuantity * productsInDb.product_loosePrice;
             }
             if (productsInDb.product_Instock < productQuantity) {
                 return res.status(400).send('Not Enough in Stock !')
@@ -92,7 +100,7 @@ const invoicing = async (req, res) => {
                 console,log("no documents found ")
              } 
 
-
+             //total 
             subtotal += productQuantity * productsInDb.product_Price;
            
         }
@@ -235,5 +243,6 @@ const deleteProductfromInvoice = async (req, res) => {
 module.exports = {
     getAllInvoices,
     invoicing,
-    deleteProductfromInvoice
+    deleteProductfromInvoice,
+    getSingleInvoice
 }

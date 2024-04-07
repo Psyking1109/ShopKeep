@@ -16,6 +16,9 @@ const inventorySchema = new Schema({
         type:Number,
         required:true
     },
+    product_loosePrice:{
+        type:Number
+    },
     product_PerUnit:{
         type:Number,
         required:true

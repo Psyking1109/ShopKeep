@@ -2,7 +2,8 @@ const express = require('express')
 const {
     getAllInvoices,
     invoicing,
-    deleteProductfromInvoice
+    deleteProductfromInvoice,
+    getSingleInvoice
 } = require('../Controller/invoicingController')
 
 const {
@@ -13,7 +14,10 @@ const {
 const invoiceRouter = express.Router()
 
 //GET all invoices
-invoiceRouter.get('/',authenticateUser(['admin','sales']),getAllInvoices)
+invoiceRouter.get('/getAllInvoice',authenticateUser(['admin','sales']),getAllInvoices)
+
+//Get Single Invoice 
+invoiceRouter.get('/:invoiceId/get-singleInvoice',authenticateUser(['admin','sales']),getSingleInvoice)
 
 //Invoicing
 invoiceRouter.post('/',authenticateUser(['admin','sales']),invoicing)
