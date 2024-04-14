@@ -3,7 +3,7 @@ const express = require('express')
 const {
     registerUser,
     login
-} = require('../controller/userController')
+} = require('../Controller/userControllers')
 
 const userRouter = express.Router()
 
@@ -11,7 +11,7 @@ const userRouter = express.Router()
 userRouter.post('/register',registerUser)
 
 //Login
-userRouter.get('/login',login)
+userRouter.post('/login',login)
 
 
 

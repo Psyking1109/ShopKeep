@@ -10,7 +10,7 @@ const {
 
 const {
     authenticateUser
-} = require('../Controller/userController')
+} = require('../Controller/userControllers')
   
   
 
