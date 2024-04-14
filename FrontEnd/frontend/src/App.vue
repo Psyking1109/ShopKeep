@@ -1,6 +1,7 @@
 <template>
   <div>
     <img alt="Vue logo" src="./assets/logo.png">
+    <dashboard />
     <Login />
   </div>
 </template>
@@ -8,10 +9,12 @@
 
 <script>
 import Login from '../src/views/Login.vue'
+import dashboard from './views/landing.vue'
 
 export default {
   name: 'App',
   components: {
+    dashboard,
     Login
   }
 }
