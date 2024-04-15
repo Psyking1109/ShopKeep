@@ -20,11 +20,21 @@ const paymentSchema = new Schema({
             default: 'cash',
             required: true
         },
+        transaction:{
+            type: mongoose.Schema.Types.ObjectId
+        }
+        /*
         bankDetails: [{
             bankName: {
                 type: String
             },
-            bankID: {
+            accountName:{
+                type: String,
+            },
+            accountID:{
+                type: String
+            },
+            accountNumber: {
                 type: String
             },
             depositDate: {
@@ -35,6 +45,9 @@ const paymentSchema = new Schema({
             }
         }],
         chequeDetails: [{
+            chequeNumber:{
+                type:Number
+            },
             bankName: {
                 type: String
             },
@@ -49,6 +62,9 @@ const paymentSchema = new Schema({
             }
         }],
         cashDetails:[{
+            cashType:{
+                type:String
+            },
             date:{
                 type:Date,
             },
@@ -56,6 +72,7 @@ const paymentSchema = new Schema({
                 type:Number
             }
         }]     
+        */
     }],
     paidAmount: {
         type: Number,
