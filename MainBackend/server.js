@@ -3,11 +3,16 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const mongoose = require('mongoose')
+
+//routes
 const InvoicingRoute = require('./routes/invoicing')
 const InventoryRoute = require('./routes/inventory')
 const CustomerRoute = require('./routes/customer')
 const UserRoute = require('./routes/user')
-
+const BankAccountRoute = require('./routes/bankAccount')
+const CashAccountRoute = require('./routes/cashAccounts')
+const ChequeAccountRoute = require('./routes/chequeAccounts')
+const SettingsRoute = require('./routes/settings')
 
 app.use(cors())
 app.use(express.json())
@@ -23,6 +28,10 @@ app.use('/api/invoicing',InvoicingRoute)
 app.use('/api/inventory',InventoryRoute)
 app.use('/api/customer',CustomerRoute)
 app.use('/api/user',UserRoute)
+app.use('/api/bankAccount',BankAccountRoute)
+app.use('/api/cashAccount',CashAccountRoute)
+app.use('/api/chequeAccount',ChequeAccountRoute)
+app.use('/api/Settings',SettingsRoute)
 
 mongoose.connect(process.env.MONGO_URI)
 .then(()=>{

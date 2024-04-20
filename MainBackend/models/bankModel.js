@@ -24,13 +24,13 @@ const bankSchema = new Schema({
     },
     transactions:[{
         reference:{
-            type:mongoose.Schema.Types.ObjectId,//this could be a invoice or any other transactions
+            type:mongoose.Schema.Types.ObjectId, //this could be a invoice or any other transactions
             required:true
         },
         deposit:{
             type:Number
         },
-        widrawal:{
+        withdrawal:{
             type:Number
         },
         transactionsType:{

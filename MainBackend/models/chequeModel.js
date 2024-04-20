@@ -38,7 +38,7 @@ const chequeSchema = new Schema({
         deposit:{
             type:Number
         },
-        widrawal:{
+        withdrawal:{
             type:Number
         },
         transactionsType:{

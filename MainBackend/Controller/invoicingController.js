@@ -12,7 +12,7 @@ const transactionTypeModel = require('../models/transationTypeModel')
 
 //functions
 const {
-    checkPayment,
+    chequePayment,
     bankPayment,
     cashPayment
 } = require('../fuctions/paymentFunctions')
@@ -23,27 +23,27 @@ const {
 //Get all Invoices
 const getAllInvoices = async (req, res) => {
     try {
-      const invoices = await Invoice.find();
-      res.status(200).json(invoices);
+        const invoices = await Invoice.find();
+        res.status(200).json(invoices);
     } catch (error) {
-      console.error(error.message);
-      res.status(500).json({ error: 'Error retrieving invoices' });
+        console.error(error.message);
+        res.status(500).json({ error: 'Error retrieving invoices' });
     }
-  };
+};
 
 //Get single invoice 
 const getSingleInvoice = async (req, res) => {
-  const invoiceId = req.params.invoiceId;
-  try {
-    const invoice = await Invoice.findById(invoiceId);
-    if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
+    const invoiceId = req.params.invoiceId;
+    try {
+        const invoice = await Invoice.findById(invoiceId);
+        if (!invoice) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+        res.status(200).json(invoice);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Error retrieving invoice' });
     }
-    res.status(200).json(invoice);
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ error: 'Error retrieving invoice' });
-  }
 };
 
 //Invoicing 
@@ -70,18 +70,19 @@ const invoicing = async (req, res) => {
 
     const savedInvoice = await invoice.save()
 
-    
-    const transactionTypeModelId = await transactionTypeModel.findOne({ transactionAccountName: "invoice payments" })
+
+    const transactionTypeModelId = await transactionTypeModel.findOne({ transactionType: "sales" })
+    //console.log("transactionTypeID - ",transactionTypeModelId)
 
     try {
         if (!mongoose.Types.ObjectId.isValid(savedInvoice._id)) {
             return res.status(404).json({ error: 'No Such bills' })
         } else {
-            console.log("no isses here")
+
         }
         customer.customerInvoice.push(savedInvoice._id)
         await customer.save()
-        console.log(savedInvoice._id)
+
 
         for (const product of req.body.products) {
             const productsInDb = await Inventory.findById(product.productId)
@@ -89,10 +90,11 @@ const invoicing = async (req, res) => {
                 return res.status(400).send('Invalid Item !');
             }
 
-            console.log("product is Loose ? = ", product.isLoose)
+            //   console.log("product is Loose ? = ", product.isLoose)
             if (product.isLoose === false) {
                 productQuantity = product.quantity * productsInDb.product_PerUnit
-                subtotal += productQuantity * productsInDb.product_Price;
+                const prodCost = productsInDb.product_Price / productsInDb.product_PerUnit
+                subtotal += productQuantity * prodCost;
             } else {
                 productQuantity = product.quantity
                 subtotal += productQuantity * productsInDb.product_loosePrice;
@@ -100,8 +102,9 @@ const invoicing = async (req, res) => {
             if (productsInDb.product_Instock < productQuantity) {
                 return res.status(400).send('Not Enough in Stock !')
             }
+
             const newQuantity = productsInDb.product_Instock - productQuantity
-            console.log("product in stock", newQuantity)
+
             //Entering Stock to inventory
             const date = new Date()
             const savedInventory = await Inventory.findByIdAndUpdate(
@@ -120,7 +123,7 @@ const invoicing = async (req, res) => {
             )
             if (savedInventory) {
                 const productMovemntId = savedInventory.products_movement[savedInventory.products_movement.length - 1]._id
-                console.log("product movement id", productMovemntId)
+
                 products.push({
                     productDetail: productMovemntId,
                     price: subtotal
@@ -130,14 +133,15 @@ const invoicing = async (req, res) => {
                 console, log("no documents found ")
             }
 
-            
-          //  subtotal += productQuantity * productsInDb.product_Price;
+
+            //  subtotal += productQuantity * productsInDb.product_Price;
 
         }
 
         const total = subtotal
         console.log("total ", total)
 
+        let totalPaid = 0;
         const payments = []
         let hasBalance = false
 
@@ -156,50 +160,22 @@ const invoicing = async (req, res) => {
                   chequeDetails: payment.chequeDetails
                 })
                 */
+                const reqBody = req.body;
+                const chequePaymentDetails = reqBody.payments.find(payment => payment.paymentType === 'cheque')
 
-               await checkPayment(req,payment,chequeModel,payments,transactionTypeModelId,savedInvoice)
-             /*   
-                const chequeId = await chequeModel.findOne({chequeAccountId:req.body.chequeAccountId})
-                if (!chequeId) {
-                   
-                    return res.status(400).send('cheque id not found !');
-                  }  
 
-                const chequePayment = await chequeModel.findOneAndUpdate(
-                    chequeId._id,
-                    {                       
-                        $push: {
-                            transactions: {
-                                reference:savedInvoice._id,
-                                chequeNumber:payment.chequeDetails.chequeNumber,
-                                bankName:payment.chequeDetails.bankName,
-                                bankBranch:payment.chequeDetails.bankBranch,
-                                datedTo:payment.chequeDetails.datedTo,
-                                deposit:payment.chequeDetails.amount,
-                                transactionsType:transactionTypeModelId._id
-                            }
-                        }
-                    },
-                    { new: true }
-                )
-                if (chequePayment) {
-                    const transactionId = chequePayment.transactions[chequePayment.transactions.length - 1]._id
-                    console.log("product movement id", transactionId)
-                    products.push({
-                        productDetail: transactionId,
-                        price: subtotal
-                    });
-    
-                } else {
-                    console, log("no documents found ")
-                }
-                */
-
+                const getpaid = await chequePayment(req, chequePaymentDetails, chequeModel, payments, transactionTypeModelId, savedInvoice)
+                totalPaid += getpaid
 
             }
             if (paymentType === 'bank') {
-            
-                await bankPayment(req,payment,bankModel,payments,transactionTypeModelId,savedInvoice)
+
+                const reqBody = req.body;
+
+                const bankPaymentDetails = reqBody.payments.find(payment => payment.paymentType === 'bank')
+
+              const getPaid =   await bankPayment(req, bankPaymentDetails, bankModel, payments, transactionTypeModelId, savedInvoice)
+              totalPaid +=getPaid
                 /*
                 payments.push({
                     paymentType: 'bank',
@@ -213,12 +189,21 @@ const invoicing = async (req, res) => {
                 */
 
 
-                
+
 
 
             }
             if (paymentType === 'cash') {
-                await cashPayment(req,payment,cashModel,payments,transactionTypeModelId,savedInvoice)
+                const reqBody = req.body;
+
+                const cashPaymentDetails = reqBody.payments.find(payment => payment.paymentType === 'cash');
+
+
+                console.log("Cash Account ID:", cashPaymentDetails);
+
+               const getPaid =  await cashPayment(req, cashPaymentDetails, cashModel, payments, transactionTypeModelId, savedInvoice)
+                totalPaid+=getPaid
+
                 /*
                 payments.push({
                     paymentType: 'cash',
@@ -232,40 +217,40 @@ const invoicing = async (req, res) => {
                 hasBalance = true
                 payments.push({
                     paymentType: 'Full_credit',
-                   // amount: paidAmount
+                    // amount: paidAmount
                 })
             }
 
         }
 
-        let totalPaid = 0;
-        for (let i = 0; i < payments.length; i++) {
-            const payment = payments[i];
-
-            if (payment.paymentType === 'cheque') {
-            //    for (const detail of payment.chequeDetails) {
-              //      totalPaid += detail.amount;
-               // }            
-                    chequeModel.findById(payment.chequeDetails)
-                   .then(checquedetails =>{
-                       totalPaid += checquedetails.amount;
-                   })
-                   .catch(error => {
-                       console.error("Error retrieving transaction amount:", error);
-                   })                  
-    
-       
-            } else if (payment.paymentType === 'bank') {
-                for (const detail of payment.bankDetails) {
-                    totalPaid += detail.amount;
-                }
-            } else if (payment.paymentType === 'cash') {
-                for (const detail of payment.cashDetails) {
-                    totalPaid += detail.amount;
-                }
-            }
-        }
-
+        /*  
+          for (let i = 0; i < payments.length; i++) {
+              const payment = payments[i];
+  
+              if (payment.paymentType === 'cheque') {
+              //    for (const detail of payment.chequeDetails) {
+                //      totalPaid += detail.amount;
+                 // }            
+                      chequeModel.findById(payment.chequeDetails)
+                     .then(chequedetails =>{
+                         totalPaid += chequedetails.amount;
+                     })
+                     .catch(error => {
+                         console.error("Error retrieving transaction amount:", error);
+                     })                  
+      
+         
+              } else if (payment.paymentType === 'bank') {
+                  for (const detail of payment.bankDetails) {
+                      totalPaid += detail.amount;
+                  }
+              } else if (payment.paymentType === 'cash') {
+                  for (const detail of payment.cashDetails) {
+                      totalPaid += detail.amount;
+                  }
+              }
+          }
+  */
         const balance = totalPaid - total
         console.log("total paid", totalPaid)
         if (totalPaid < total || totalPaid > total || balance != 0) {
@@ -280,6 +265,8 @@ const invoicing = async (req, res) => {
             paidAmount: totalPaid,
         })
         const paymentId = await paymentDetails.save()
+
+
         console.log("payment details ", paymentDetails)
 
 

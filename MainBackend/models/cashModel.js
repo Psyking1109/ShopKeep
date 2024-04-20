@@ -5,7 +5,7 @@ const Schema = mongoose.Schema
 
 const cashSchema = new Schema({
 
-    cashName:{
+    cashAccountName:{
         type:String,
         required:true
     },
@@ -22,7 +22,7 @@ const cashSchema = new Schema({
         deposit:{
             type:Number
         },
-        widrawal:{
+        withdrawal:{
             type:Number
         },
         transactionsType:{
