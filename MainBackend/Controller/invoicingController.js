@@ -134,7 +134,6 @@ const invoicing = async (req, res) => {
             }
 
 
-            //  subtotal += productQuantity * productsInDb.product_Price;
 
         }
 
@@ -152,14 +151,9 @@ const invoicing = async (req, res) => {
             const paymentType = payment.paymentType
             const paidAmount = payment.amount
 
-
+            //change to switch 
             if (paymentType === 'cheque') {
-                /*
-                payments.push({
-                    paymentType: 'cheque',
-                  chequeDetails: payment.chequeDetails
-                })
-                */
+           
                 const reqBody = req.body;
                 const chequePaymentDetails = reqBody.payments.find(payment => payment.paymentType === 'cheque')
 
@@ -176,21 +170,7 @@ const invoicing = async (req, res) => {
 
               const getPaid =   await bankPayment(req, bankPaymentDetails, bankModel, payments, transactionTypeModelId, savedInvoice)
               totalPaid +=getPaid
-                /*
-                payments.push({
-                    paymentType: 'bank',
-                    bankDetails: [{
-                        BankName: payment.bankDetails.bankName,
-                        bankID: payment.bankDetails.bankID,
-                        depositDate: payment.bankDetails.depositDate,
-                        amount: payment.bankDetails.amount
-                    }]
-                })
-                */
-
-
-
-
+            
 
             }
             if (paymentType === 'cash') {
@@ -204,13 +184,7 @@ const invoicing = async (req, res) => {
                const getPaid =  await cashPayment(req, cashPaymentDetails, cashModel, payments, transactionTypeModelId, savedInvoice)
                 totalPaid+=getPaid
 
-                /*
-                payments.push({
-                    paymentType: 'cash',
-                    cashDetails: payment.cashDetails
-                })
-                */
-
+ 
             }
 
             if (paidAmount == 0) {
@@ -223,34 +197,6 @@ const invoicing = async (req, res) => {
 
         }
 
-        /*  
-          for (let i = 0; i < payments.length; i++) {
-              const payment = payments[i];
-  
-              if (payment.paymentType === 'cheque') {
-              //    for (const detail of payment.chequeDetails) {
-                //      totalPaid += detail.amount;
-                 // }            
-                      chequeModel.findById(payment.chequeDetails)
-                     .then(chequedetails =>{
-                         totalPaid += chequedetails.amount;
-                     })
-                     .catch(error => {
-                         console.error("Error retrieving transaction amount:", error);
-                     })                  
-      
-         
-              } else if (payment.paymentType === 'bank') {
-                  for (const detail of payment.bankDetails) {
-                      totalPaid += detail.amount;
-                  }
-              } else if (payment.paymentType === 'cash') {
-                  for (const detail of payment.cashDetails) {
-                      totalPaid += detail.amount;
-                  }
-              }
-          }
-  */
         const balance = totalPaid - total
         console.log("total paid", totalPaid)
         if (totalPaid < total || totalPaid > total || balance != 0) {

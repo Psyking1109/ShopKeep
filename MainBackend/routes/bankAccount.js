@@ -41,7 +41,7 @@ bankAccountRouter.get('/:accountId/balance', authenticateUser(['admin', 'account
 
 
 //get transactions
-bankAccountRouter.get('/:accountId/transactions', authenticateUser(['admin', 'accounts']), getAllTransactions)
+bankAccountRouter.get('/:accountId/gettransactions', authenticateUser(['admin', 'accounts']), getAllTransactions)
 
 
 module.exports = bankAccountRouter

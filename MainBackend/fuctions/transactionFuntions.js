@@ -1,46 +1,35 @@
 
-const getAllTransactionsFunc = async(req, res , bankModel,TransactionTypeModel , InvoiceModel)=> {
-    const { AccountId } = req.params;
+const getAllTransactionsFunc = async (req, res, Model, TransactionTypeModel, InvoiceModel) => {
+    const { accountId } = req.params;
     try {
-   
-        const bankAccount = await bankModel.findById(AccountId);
-
-        if (!bankAccount) {
-            return res.status(404).json({ error: 'Bank account not found' });
+        const account = await Model.findById(accountId);
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
         }
         const transactions = [];
 
-
-        for (const transaction of bankAccount.transactions) {
+        for (const transaction of account.transactions) {
             let transactionType;
-
-            // Find the transaction type by its ID
-            const transactionTypeObj = await TransactionTypeModel.findById(transaction.transactionsType);
-
-            if (!transactionTypeObj) {
+            const foundTransactionType = await TransactionTypeModel.findById(transaction.transactionsType);
+            if (!foundTransactionType) {
                 transactionType = 'Unknown';
             } else {
-                transactionType = transactionTypeObj.transactionAccountName;
+                transactionType = foundTransactionType.transactionType;
             }
-    
+            console.log("Transaction type ", transaction.transactionsType);
+
             const transactionObject = {
                 type: transactionType,
             };
-           
-            if (transaction.deposit) {
-                transactionObject.deposit = transaction.deposit;
-            } else if (transaction.withdrawal) {
-                transactionObject.withdrawal = transaction.withdrawal;
-            }
 
-            // If transaction type is 'sales', 
+            transactionObject[transaction.deposit ? 'deposit' : 'withdrawal'] = transaction.deposit || transaction.withdrawal;
+
             if (transactionType === 'sales') {
                 const invoice = await InvoiceModel.findById(transaction.reference);
                 if (invoice) {
                     transactionObject.reference = invoice.invoiceNumber;
                 }
             } else {
-                // For other transaction types, 
                 transactionObject.reference = transaction.reference;
             }
 
@@ -49,9 +38,11 @@ const getAllTransactionsFunc = async(req, res , bankModel,TransactionTypeModel ,
 
         return res.status(200).json(transactions);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+};
+
 
 
 const getBalanceFunc = async(req, res , Model)=> {

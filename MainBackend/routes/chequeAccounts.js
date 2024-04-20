@@ -37,9 +37,9 @@ chequeAccountRouter.patch('/:accountId/:transactionId/update-chequeDetails',auth
 chequeAccountRouter.delete('/:accountId/:transactionId/update-chequeDetails',authenticateUser(['admin','accounts']),deleteChequeTransaction)
 
 //get cheque Balance
-chequeAccountRouter.get('/:accountId',authenticateUser(['admin','accounts']),getBalance)
+chequeAccountRouter.get('/:accountId/balance',authenticateUser(['admin','accounts']),getBalance)
 
 //get transactions
-chequeAccountRouter.get('/accountId',authenticateUser(['admin','accounts']),getAllTransactions)
+chequeAccountRouter.get('/:accountId/gettransactions',authenticateUser(['admin','accounts']),getAllTransactions)
 
 module.exports =chequeAccountRouter

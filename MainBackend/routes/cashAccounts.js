@@ -37,9 +37,9 @@ cashAccountRouter.patch('/:accountId/:transactionId/update-cashDetails',authenti
 cashAccountRouter.delete('/:accountId/:transactionId/update-cashDetails',authenticateUser(['admin','accounts']),deleteCashTransaction)
 
 //get cash Balance
-cashAccountRouter.get('/:accountId',authenticateUser(['admin','accounts']),getBalance)
+cashAccountRouter.get('/:accountId/balance',authenticateUser(['admin','accounts']),getBalance)
 
 //get transactions
-cashAccountRouter.get('/accountId',authenticateUser(['admin','accounts']),getAllTransactions)
+cashAccountRouter.get('/:accountId/gettransactions',authenticateUser(['admin','accounts']),getAllTransactions)
 
 module.exports = cashAccountRouter

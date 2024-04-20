@@ -49,14 +49,14 @@ const transferAmount = async(req, res) => {
             sourceAccount.transactions.push({
                 reference: destinationAccountId,
                 withdrawal: amount,
-                transactionsType: transactionsType // Use the transactionsType from req.body
+                transactionsType: transactionsType // Use the transactionsType objectID
             });
         } else {
             // For cheque and cash accounts, consider it as withdrawal from the source
             sourceAccount.transactions.push({
                 reference: destinationAccountId,
                 withdrawal: amount,
-                transactionsType: transactionsType // Use the transactionsType from req.body
+                transactionsType: transactionsType // Use the transactionsType objectID
             });
         }
 
@@ -65,14 +65,14 @@ const transferAmount = async(req, res) => {
             destinationAccount.transactions.push({
                 reference: sourceAccountId,
                 deposit: amount,
-                transactionsType: transactionsType // Use the transactionsType from req.body
+                transactionsType: transactionsType // Use the transactionsType objectID
             });
         } else {
             // For cheque and cash accounts, consider it as deposit to the destination
             destinationAccount.transactions.push({
                 reference: sourceAccountId,
                 deposit: amount,
-                transactionsType: transactionsType // Use the transactionsType from req.body
+                transactionsType: transactionsType // Use the transactionsType from objectID
             });
         }
 
