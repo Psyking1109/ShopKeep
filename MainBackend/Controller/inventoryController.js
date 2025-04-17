@@ -1,5 +1,15 @@
 const mongoose = require('mongoose')
+
+//Schemas
 const Inventory = require('../models/inventoryModel')
+const Tax = require('../models/taxModels')
+
+
+//Functions
+const getTaxes = require('../fuctions/taxesFunction')
+
+
+
 
 //Get All Inventory
 const getallProducts = async(req,res)=>{
@@ -21,50 +31,68 @@ const getSingleproduct = async(req,res)=>{
 }
 
 //Create New Product
-const createProducts = async(req,res)=>{
-const{product_Name,
+const createProducts = async (req, res) => {
+  const {
+    product_Name,
     product_code,
     product_Price,
+    tax_inclusive,
     product_loosePrice,
     product_PerUnit,
-    product_Instock
-}=req.body
-let emptyFields = []
-if(!product_Name){
-    emptyFields.push('product_name')
-}
-if(!product_code){
-    emptyFields.push('product_code')
-}
-if(!product_Price){
-    emptyFields.push('product_Price')
-}
-if(!product_loosePrice){
-    emptyFields.push('product_loosePrice')
-}
-if(!product_PerUnit){
-    emptyFields.push('product_PerUnit')
-}
-if(!product_Instock){
-    emptyFields.push('product_Instock')
-}
-if(emptyFields.length > 0){
-    return res.status(400).json({error: 'Please fill in all the fields ', emptyFields})
-}
-try{
-    const products = await Inventory.create({
-        product_Name,
-        product_code,
-        product_Price,
-        product_loosePrice,
-        product_PerUnit,
-        product_Instock
-    })
-    res.status(200).json(products)
-}catch(error){
-    res.status(400).json({error:error.message})
-}
-}
+    product_Instock,
+    taxIds 
+  } = req.body;
+
+  // Validation
+  const emptyFields = [];
+  if (!product_Name) emptyFields.push('product_Name');
+  if (!product_code) emptyFields.push('product_code');
+  if (tax_inclusive === undefined) emptyFields.push('tax_inclusive');
+  if (!product_Price) emptyFields.push('product_Price');
+  if (!product_loosePrice) emptyFields.push('product_loosePrice');
+  if (!product_PerUnit) emptyFields.push('product_PerUnit');
+  if (!product_Instock) emptyFields.push('product_Instock');
+
+  if (emptyFields.length > 0) {
+    return res.status(400).json({ error: 'Please fill in all the fields', emptyFields });
+  }
+
+  let finalProductPrice = product_Price;
+  let finalLoosePrice = product_loosePrice;
+
+  if (tax_inclusive === false && taxIds && taxIds.length > 0) {
+    try {
+      // Get taxes sorted by priority
+      const taxes = await Tax.find({ _id: { $in: taxIds } }).sort({ taxPriority: 1 });
+
+      for (const tax of taxes) {
+        const taxAmount = (finalProductPrice * tax.rate) / 100;
+        const looseTaxAmount = (finalLoosePrice * tax.rate) / 100;
+
+        finalProductPrice += taxAmount;
+        finalLoosePrice += looseTaxAmount;
+      }
+    } catch (err) {
+      return res.status(500).json({ error: 'Error calculating taxes', details: err.message });
+    }
+  }
+
+  try {
+    const product = await Inventory.create({
+      product_Name,
+      product_code,
+      product_Price: finalProductPrice,
+      product_loosePrice: finalLoosePrice,
+      product_PerUnit,
+      product_Instock
+    });
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 
 
 //Delete Products
